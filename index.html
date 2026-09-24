@@ -162,20 +162,98 @@ function useLocation(){
 }
 $('#locBtn').onclick=useLocation;$('#locBtn2').onclick=useLocation;
 
+const RONGSOK_VOCAB=[
+ {cat:'Besi / Logam',name:'Besi',words:['besi','besi tua','besi tuaan','besi campur','potongan besi','besi beton','pipa besi']},
+ {cat:'Besi / Logam',name:'Tembaga',words:['tembaga','tembaga merah','tembaga bakar','kawat tembaga']},
+ {cat:'Besi / Logam',name:'Kabel',words:['kabel','kabel tembaga','kabel kupas','kabel kulit','kabel bekas']},
+ {cat:'Besi / Logam',name:'Kuningan',words:['kuningan']},
+ {cat:'Besi / Logam',name:'Aluminium',words:['aluminium','alumunium','aluminium panci','aluminium siku','alumunium panci']},
+ {cat:'Besi / Logam',name:'Stainless',words:['stainless','stainless steel']},
+ {cat:'Besi / Logam',name:'Seng',words:['seng','seng bekas']},
+ {cat:'Besi / Logam',name:'Kaleng',words:['kaleng','kaleng bekas','kaleng cat']},
+ {cat:'Besi / Logam',name:'Aki / Accu',words:['aki','accu','aki bekas']},
+ {cat:'Kardus / Kertas',name:'Kardus',words:['kardus','dus','karton','kardus bekas']},
+ {cat:'Kardus / Kertas',name:'Duplek',words:['duplek','duplex']},
+ {cat:'Kardus / Kertas',name:'Koran',words:['koran','kertas koran']},
+ {cat:'Kardus / Kertas',name:'Majalah',words:['majalah']},
+ {cat:'Kardus / Kertas',name:'Buku',words:['buku','buku bekas']},
+ {cat:'Kardus / Kertas',name:'HVS / Putihan',words:['hvs','putihan','kertas putih']},
+ {cat:'Plastik',name:'Botol Plastik',words:['botol plastik','botol pet','pet','botol pet bekas']},
+ {cat:'Plastik',name:'Gelas Plastik',words:['gelas plastik','gelas aqua','gelas a','gelas b']},
+ {cat:'Plastik',name:'Tutup Botol / Galon',words:['tutup botol','tutup galon','tutup']},
+ {cat:'Plastik',name:'Galon',words:['galon','galon bekas']},
+ {cat:'Plastik',name:'PE / Asoy / Polybag',words:['pe bening','pe kotor','polybag','asoy','kantong asoy']},
+ {cat:'Plastik',name:'HD / PK',words:['hd','pk','hdpe']},
+ {cat:'Plastik',name:'MLP',words:['mlp','multilayer']},
+ {cat:'Plastik',name:'Bodong',words:['bodong','bodong warna','bodong b','bodong kotor']},
+ {cat:'Botol / Kaca',name:'Botol Beling',words:['botol beling','beling','kaca','kaca bekas','botol kaca']},
+ {cat:'Elektronik',name:'Elektronik',words:['elektronik','elektronik bekas','tv','televisi','kulkas','mesin cuci','monitor','komputer','printer']},
+ {cat:'Lainnya',name:'Paralon',words:['paralon','pvc']},
+ {cat:'Lainnya',name:'Karpet',words:['karpet']},
+ {cat:'Lainnya',name:'Akrilik',words:['akrilik','acrylic']},
+ {cat:'Lainnya',name:'CD / DVD',words:['cd','dvd','kaset']},
+ {cat:'Lainnya',name:'Mainan',words:['mainan','mainan bekas']},
+ {cat:'Lainnya',name:'Minyak Jelantah',words:['jelantah','minyak jelantah','minyak bekas']},
+ {cat:'Lainnya',name:'Tetrapack',words:['tetrapack','tetra pak','kotak susu']},
+ {cat:'Lainnya',name:'Campur / Gabruk',words:['gabruk','campur','barang campur','rongsok campur','campuran']}
+];
+
+const RONGSOK_LOCATIONS=['jakarta','bekasi','cikarang','karawang','tambun','depok','tangerang','bogor','serang','cibitung','tambun selatan','tambun utara','bantargebang','jatiasih','babelan','setu','cileungsi','gunung putri','cikarang barat','cikarang timur','cikarang utara','cikarang selatan','karang bahagia','kedungwaringin'];
+
+function pretty(s){return s?s.replace(/\\b\\w/g,m=>m.toUpperCase()):s}
 function parseAI(){
  const raw=$('#aiInput').value.trim();if(!raw)return;
  const s=raw.toLowerCase();
- const cats=s.includes('kardus')||s.includes('kertas')?'Kardus / Kertas':s.includes('plastik')||s.includes('botol')?'Plastik':s.includes('besi')||s.includes('logam')?'Besi / Logam':s.includes('elektronik')||s.includes('kulkas')||s.includes('tv')?'Elektronik':'Lainnya';
- const qty=(raw.match(/(?:sekitar|±|kurang lebih|kurleb)\s*([\d.,]+\s*(?:kg|kilo|ton|pcs|biji))/i)||raw.match(/([\d.,]+\s*(?:kg|kilo|ton|pcs|biji))/i)||[])[1]||'Perlu dikonfirmasi';
- const locations=['jakarta','bekasi','cikarang','karawang','tambun','depok','tangerang','bogor'];
- const loc=locations.find(x=>s.includes(x)); 
- const name=cats==='Kardus / Kertas'?'Kardus / kertas bekas':cats==='Besi / Logam'?'Besi / logam bekas':cats==='Plastik'?'Plastik bekas':cats==='Elektronik'?'Elektronik bekas':'Barang bekas';
- const html=`<strong>Gue tangkap begini:</strong><div style="margin-top:8px"><span class="tag">📦 ${name}</span><span class="tag">⚖️ ${qty}</span><span class="tag">📍 ${loc?loc[0].toUpperCase()+loc.slice(1):'Lokasi belum disebut'}</span></div><div class="actions"><button class="btn primary" id="useAI">Pakai untuk posting</button></div>`;
+
+ // 1) Cari istilah rongsok paling spesifik dulu.
+ let matches=[];
+ RONGSOK_VOCAB.forEach(v=>v.words.forEach(w=>{if(s.includes(w))matches.push({cat:v.cat,name:v.name,word:w,length:w.length})}));
+ matches.sort((a,b)=>b.length-a.length);
+ const hit=matches[0]||{cat:'Lainnya',name:'Barang bekas',word:''};
+
+ // 2) Berat/jumlah: dukung 500kg, 500 kg, 2 ton, 20 pcs, 3 karung, dll.
+ const qtyMatch=raw.match(/(?:sekitar|±|kurang lebih|kurleb|ada|punya)?\\s*([\\d.,]+)\\s*(kg|kilo|kilogram|ton|ons|pcs|pc|biji|karung|dus|ikat|unit)\\b/i);
+ const qty=qtyMatch?qtyMatch[1]+' '+qtyMatch[2].replace(/^kilo$|^kilogram$/i,'kg').replace(/^pc$/i,'pcs'):'Perlu dikonfirmasi';
+
+ // 3) Harga: 100.000/kg, 100 rb per kilo, 1,5 juta, dll.
+ const priceMatch=raw.match(/(?:rp\\.?\\s*)?([\\d.,]+)\\s*(rb|ribu|jt|juta)?\\s*(?:per|\\/)\\s*(kg|kilo|kilogram|pcs|biji|unit)/i)
+   || raw.match(/rp\\.?\\s*([\\d.,]+)\\s*(rb|ribu|jt|juta)?/i);
+ let price='';
+ if(priceMatch){
+   price='Rp '+priceMatch[1]+(priceMatch[2]?' '+priceMatch[2]:'')+(priceMatch[3]?' / '+priceMatch[3].replace(/kilo|kilogram/i,'kg'):'');
+ }
+
+ // 4) Lokasi: pilih frasa terpanjang agar "Tambun Selatan" tidak kalah oleh "Tambun".
+ const loc=RONGSOK_LOCATIONS.filter(x=>s.includes(x)).sort((a,b)=>b.length-a.length)[0]||'';
+
+ // 5) Nama posting dibuat dari jenis yang tertangkap, bukan selalu "barang bekas".
+ const name=hit.name==='Barang bekas'?'Barang bekas':hit.name+' bekas';
+ const tags=[
+   '<span class="tag">📦 '+name+'</span>',
+   '<span class="tag">🏷️ '+hit.cat+'</span>',
+   '<span class="tag">⚖️ '+qty+'</span>'
+ ];
+ if(loc)tags.push('<span class="tag">📍 '+pretty(loc)+'</span>');
+ if(price)tags.push('<span class="tag">💰 '+price+'</span>');
+ if(matches.length>1)tags.push('<span class="tag">🔎 '+matches.slice(1,4).map(x=>x.name).join(' + ')+'</span>');
+
+ const html='<strong>Gue tangkap begini:</strong><div style="margin-top:8px">'+tags.join('')+'</div><div class="muted" style="margin-top:8px">Istilah yang ketemu: <b>'+ (matches.length?matches.slice(0,4).map(x=>x.word).join(', '):'belum ada di kamus') +'</b></div><div class="actions"><button class="btn primary" id="useAI">Pakai untuk posting</button></div>';
  const r=$('#aiResult');r.innerHTML=html;r.style.display='block';
- $('#useAI').onclick=()=>{show('post');$('#pName').value=name;$('#pCat').value=cats;$('#pQty').value=qty==='Perlu dikonfirmasi'?'':qty;$('#pLoc').value=loc?loc[0].toUpperCase()+loc.slice(1):'';$('#pDesc').value=raw};
+
+ $('#useAI').onclick=()=>{
+   show('post');
+   $('#pName').value=name;
+   $('#pCat').value=hit.cat;
+   $('#pQty').value=qty==='Perlu dikonfirmasi'?'':qty;
+   $('#pLoc').value=loc?pretty(loc):'';
+   $('#pDesc').value=raw+(price?'\\nHarga: '+price:'');
+ };
 }
 $('#aiParse').onclick=parseAI;
-$('#aiExample').onclick=()=>{$('#aiInput').value='Gue punya kardus sekitar 500 kg di Cikarang, kondisi campur dan siap diambil.';parseAI()};
+$('#aiExample').onclick=()=>{
+ $('#aiInput').value='gw punya tembaga 500kg, kabel campur, lokasi Depok, gw jual 100.000 per kg dah';
+ parseAI()
+};
 </script>
 </body>
 </html>
