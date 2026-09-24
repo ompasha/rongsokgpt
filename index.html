@@ -245,32 +245,30 @@ const RONGSOK_LOCATIONS=['jakarta','bekasi','cikarang','karawang','tambun','depo
 
 function pretty(s){return s?s.replace(/\\b\\w/g,m=>m.toUpperCase()):s}
 function parseAI(){
- const raw=$('#aiInput').value.trim();if(!raw)return;
+ const raw=$('#aiInput').value.trim();
+ if(!raw)return;
  const s=raw.toLowerCase();
 
- // 1) Cari istilah rongsok paling spesifik dulu.
  let matches=[];
- RONGSOK_VOCAB.forEach(v=>v.words.forEach(w=>{if(s.includes(w))matches.push({cat:v.cat,name:v.name,word:w,length:w.length})}));
+ RONGSOK_VOCAB.forEach(v=>v.words.forEach(w=>{
+   if(s.includes(w)) matches.push({cat:v.cat,name:v.name,word:w,length:w.length});
+ }));
  matches.sort((a,b)=>b.length-a.length);
  const hit=matches[0]||{cat:'Lainnya',name:'Barang bekas',word:''};
 
- // 2) Berat/jumlah: dukung 500kg, 500 kg, 2 ton, 20 pcs, 3 karung, dll.
- const qtyMatch=raw.match(/(?:sekitar|±|kurang lebih|kurleb|ada|punya)?\\s*([\\d.,]+)\\s*(kg|kilo|kilogram|ton|ons|pcs|pc|biji|karung|dus|ikat|unit)\\b/i);
- const qty=qtyMatch?qtyMatch[1]+' '+qtyMatch[2].replace(/^kilo$|^kilogram$/i,'kg').replace(/^pc$/i,'pcs'):'Perlu dikonfirmasi';
+ const qtyMatch=raw.match(/(?:sekitar|±|kurang lebih|kurleb|ada|punya)?\s*([\d.,]+)\s*(kg|kilo|kilogram|ton|ons|pcs|pc|biji|karung|dus|ikat|unit)\b/i);
+ const qty=qtyMatch ? qtyMatch[1]+' '+qtyMatch[2].replace(/^(kilo|kilogram)$/i,'kg').replace(/^pc$/i,'pcs') : 'Perlu dikonfirmasi';
 
- // 3) Harga: 100.000/kg, 100 rb per kilo, 1,5 juta, dll.
- const priceMatch=raw.match(/(?:rp\\.?\\s*)?([\\d.,]+)\\s*(rb|ribu|jt|juta)?\\s*(?:per|\\/)\\s*(kg|kilo|kilogram|pcs|biji|unit)/i)
-   || raw.match(/rp\\.?\\s*([\\d.,]+)\\s*(rb|ribu|jt|juta)?/i);
+ const priceMatch=raw.match(/(?:rp\.?\s*)?([\d.,]+)\s*(rb|ribu|jt|juta)?\s*(?:per|\/)\s*(kg|kilo|kilogram|pcs|biji|unit)/i)
+   || raw.match(/rp\.?\s*([\d.,]+)\s*(rb|ribu|jt|juta)?/i);
  let price='';
  if(priceMatch){
    price='Rp '+priceMatch[1]+(priceMatch[2]?' '+priceMatch[2]:'')+(priceMatch[3]?' / '+priceMatch[3].replace(/kilo|kilogram/i,'kg'):'');
  }
 
- // 4) Lokasi: pilih frasa terpanjang agar "Tambun Selatan" tidak kalah oleh "Tambun".
  const loc=RONGSOK_LOCATIONS.filter(x=>s.includes(x)).sort((a,b)=>b.length-a.length)[0]||'';
-
- // 5) Nama posting dibuat dari jenis yang tertangkap, bukan selalu "barang bekas".
  const name=hit.name==='Barang bekas'?'Barang bekas':hit.name+' bekas';
+
  const tags=[
    '<span class="tag">📦 '+name+'</span>',
    '<span class="tag">🏷️ '+hit.cat+'</span>',
@@ -281,7 +279,9 @@ function parseAI(){
  if(matches.length>1)tags.push('<span class="tag">🔎 '+matches.slice(1,4).map(x=>x.name).join(' + ')+'</span>');
 
  const html='<strong>Gue tangkap begini:</strong><div style="margin-top:8px">'+tags.join('')+'</div><div class="muted" style="margin-top:8px">Istilah yang ketemu: <b>'+ (matches.length?matches.slice(0,4).map(x=>x.word).join(', '):'belum ada di kamus') +'</b></div><div class="actions"><button class="btn primary" id="useAI">Pakai untuk posting</button></div>';
- const r=$('#aiResult');r.innerHTML=html;r.style.display='block';
+ const r=$('#aiResult');
+ r.innerHTML=html;
+ r.style.display='block';
 
  $('#useAI').onclick=()=>{
    show('post');
@@ -289,9 +289,10 @@ function parseAI(){
    $('#pCat').value=hit.cat;
    $('#pQty').value=qty==='Perlu dikonfirmasi'?'':qty;
    $('#pLoc').value=loc?pretty(loc):'';
-   $('#pDesc').value=raw+(price?'\\nHarga: '+price:'');
+   $('#pDesc').value=raw+(price?'\nHarga: '+price:'');
  };
 }
+
 $('#aiParse').onclick=parseAI;
 $('#aiExample').onclick=()=>{
  $('#aiInput').value='gw punya tembaga 500kg, kabel campur, lokasi Depok, gw jual 100.000 per kg dah';
