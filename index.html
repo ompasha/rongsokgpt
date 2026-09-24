@@ -23,6 +23,7 @@ main{padding:22px 16px 50px}.view{display:none}.view.active{display:block}
 form{max-width:760px;margin:10px auto}.field{margin:13px 0}.field label{display:block;font-size:13px;color:#cbd0d9;margin-bottom:7px}.field input,.field textarea,.field select{width:100%;border:1px solid #303643;outline:0;background:var(--panel);color:var(--text);border-radius:13px;padding:12px 13px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:#66717f}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .ai{max-width:760px;margin:0 auto}.ai-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}.ai-result{margin-top:12px;padding:14px;border-radius:14px;background:#151a17;border:1px solid #2d4030;display:none}.tag{display:inline-block;padding:5px 8px;border-radius:8px;background:#263225;color:#c8efa8;font-size:12px;margin:3px 3px 0 0}
 .empty{padding:26px 10px;text-align:center;color:var(--muted)}.note{font-size:11px;color:#697181;text-align:center;margin-top:12px}
+.feed-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}.feed-top{display:flex;justify-content:space-between;gap:12px}.feed-type{font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.5px;text-transform:uppercase}.feed-card h3{margin:5px 0 5px;font-size:17px}.feed-tags{margin-top:10px}.feed-card .meta{margin-top:9px}.feed-photo{height:125px;border-radius:14px;background:linear-gradient(135deg,#202821,#11151b);display:grid;place-items:center;font-size:44px;margin-bottom:12px}.searchbox{width:100%;border:1px solid #303643;outline:0;background:var(--panel);color:var(--text);border-radius:13px;padding:12px 13px}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.two{grid-template-columns:1fr}header{height:58px}nav{top:58px}.status{display:none}main{padding:16px 12px 40px}}
 </style>
 </head>
@@ -31,9 +32,9 @@ form{max-width:760px;margin:10px auto}.field{margin:13px 0}.field label{display:
 <header><div class="brand"><div class="logo">R</div>Rongsok</div><div class="status"><span class="dot"></span>barang ketemu pembeli</div></header>
 <nav id="nav">
 <button class="active" data-view="home">🏠 Beranda</button>
-<button data-view="post">📦 Post Barang</button>
-<button data-view="goods">♻️ Barang Sekitar</button>
-<button data-view="buyers">🏪 Pengusaha Sekitar</button>
+<button data-view="feed">🧭 Rongsok Feed</button>
+<button data-view="post">📦 Saya Punya</button>
+<button data-view="buyers">🏪 Pengusaha</button>
 <button data-view="ai">✨ Bantu AI</button>
 </nav>
 
@@ -53,6 +54,18 @@ form{max-width:760px;margin:10px auto}.field{margin:13px 0}.field label{display:
 </div>
 <div class="section-title"><h2>Pengusaha sekitar</h2><button class="btn" data-go="buyers">Lihat semua</button></div>
 <div class="card" id="homeBuyers"></div>
+</section>
+
+<section class="view" id="feed">
+<div class="section-title"><div><h2>🧭 Rongsok Feed</h2><div class="muted">Punya barang, cari barang, atau buka usaha — semuanya ketemu di sini.</div></div><button class="btn" data-go="ai">✨ Cari dengan AI</button></div>
+<div class="card" style="margin-bottom:12px">
+<div class="two">
+<div><label class="muted">🔎 Cari apa?</label><input id="feedSearch" placeholder="contoh: tembaga, kardus, PE, AC..."></div>
+<div><label class="muted">🎯 Saya sedang...</label><select id="feedIntent"><option value="all">Semua posting</option><option value="have">Punya barang</option><option value="need">Butuh barang</option><option value="business">Pengusaha</option></select></div>
+</div>
+</div>
+<div id="feedList"></div>
+<div class="note">Prototype: isi feed ini masih contoh + posting lokal browser. Nanti bisa menjadi feed online bersama.</div>
 </section>
 
 <section class="view" id="post">
@@ -118,12 +131,41 @@ function show(view){
  window.scrollTo({top:0,behavior:'smooth'});
  if(view==='goods') renderGoods();
  if(view==='buyers') renderBuyers();
+ if(view==='feed') renderFeed();
 }
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
 
 function getPosts(){try{return JSON.parse(localStorage.getItem('rongsok_posts')||'[]')}catch{return[]}}
 function savePosts(p){localStorage.setItem('rongsok_posts',JSON.stringify(p))}
+
+const demoFeed=[
+ {kind:'business',icon:'🏪',title:'Lapak Berkah',text:'Menerima kardus, plastik, kertas. Bisa tanya harga dan area jemput.',tags:['Kardus','Plastik','Kertas'],loc:'Bekasi',action:'Hubungi via WhatsApp'},
+ {kind:'need',icon:'🔎',title:'Cari PE bersih / kering',text:'Butuh pasokan PE bersih dan kering. Volume sekitar 2 kwintal atau lebih.',tags:['PE','Plastik','200 kg+'],loc:'Tangerang',action:'Saya punya'},
+ {kind:'have',icon:'📦',title:'Tembaga + kabel bekas',text:'Ada tembaga sekitar 500 kg, kabel campur. Siap dibicarakan harga.',tags:['Tembaga','Kabel','500 kg'],loc:'Depok',action:'Hubungi pemilik'},
+ {kind:'business',icon:'🚚',title:'Pengepul siap jemput',text:'Terima AC, kulkas, motor mati, TV, aluminium dan besi campur.',tags:['Elektronik','Aluminium','Besi'],loc:'Tambun',action:'WhatsApp'},
+ {kind:'need',icon:'🏭',title:'Butuh besi tua',text:'Mencari besi tua campur untuk pasokan rutin. Bisa volume besar.',tags:['Besi','Rutin','Volume besar'],loc:'Cikarang',action:'Saya punya'},
+ {kind:'have',icon:'♻️',title:'Gabruk campur 1 pickup',text:'Campuran kardus, plastik, kaleng dan beberapa barang logam. Bisa diambil.',tags:['Campur','Gabruk','Pickup'],loc:'Bekasi',action:'Hubungi pemilik'}
+];
+
+function renderFeed(){
+ const q=($('#feedSearch')?.value||'').toLowerCase().trim();
+ const intent=$('#feedIntent')?.value||'all';
+ const own=getPosts().map(p=>({kind:'have',icon:p.emoji||'📦',title:p.name,text:p.desc||'Posting barang dari pengguna.',tags:[p.cat,p.qty].filter(Boolean),loc:p.loc,action:'Posting saya',own:true}));
+ const all=[...own,...demoFeed];
+ const filtered=all.filter(x=>{
+   const intentOk=intent==='all'||x.kind===intent;
+   const text=(x.title+' '+x.text+' '+x.tags.join(' ')+' '+x.loc).toLowerCase();
+   return intentOk&&(!q||text.includes(q));
+ });
+ $('#feedList').innerHTML=filtered.length?filtered.map(x=>`<div class="feed-card">
+ <div class="feed-top"><div><div class="feed-type">${x.kind==='have'?'📦 PUNYA BARANG':x.kind==='need'?'🔎 BUTUH BARANG':'🏪 PENGUSAHA'}</div><h3>${x.icon} ${x.title}</h3></div><span class="tag">📍 ${x.loc||'—'}</span></div>
+ <div class="muted">${x.text}</div><div class="feed-tags">${x.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+ <div class="meta"><span>🕒 baru saja</span></div><div class="actions">${x.own?'<span class="tag">Posting saya</span>':`<button class="btn wa" onclick="wa('Halo, saya melihat posting ${x.title} di Rongsok. Saya tertarik untuk lanjut lewat WhatsApp.')">💬 ${x.action}</button>`}</div>
+ </div>`).join(''):'<div class="card empty">Belum ada posting yang cocok. Coba kata lain.</div>';
+}
+$('#feedSearch').oninput=renderFeed;
+$('#feedIntent').onchange=renderFeed;
 
 function wa(text){
  const url='https://wa.me/?text='+encodeURIComponent(text);
@@ -137,6 +179,7 @@ function renderBuyers(){
  home.innerHTML=demoBuyers.slice(0,3).map(b=>`<div class="item"><div class="photo">${b.emoji}</div><div class="item-body"><h3>${b.name}</h3><div class="muted">${b.type}</div><div class="meta"><span>📍 ${b.area}</span></div></div></div>`).join('');
 }
 renderBuyers();
+renderFeed();
 
 function renderGoods(){
  const own=getPosts().map(p=>({...p,own:true}));
