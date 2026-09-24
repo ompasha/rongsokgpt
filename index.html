@@ -4,44 +4,178 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0d12">
-<title>Rongsok — AI Assistant</title>
+<title>Rongsok — Barang Ketemu Pembeli</title>
 <style>
-:root{--bg:#0b0d12;--panel:#11141b;--panel2:#171b24;--text:#f4f5f7;--muted:#9299a8;--line:#252a35;--accent:#9be15d;--accent2:#65c18c}
+:root{--bg:#0b0d12;--panel:#11141b;--panel2:#171b24;--text:#f4f5f7;--muted:#9299a8;--line:#252a35;--accent:#9be15d;--accent2:#65c18c;--danger:#ff8b8b}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
-body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% -10%,#1c2430 0,#0b0d12 42%);color:var(--text);overflow:hidden}
-.app{height:100%;display:flex;flex-direction:column;max-width:980px;margin:auto}
-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.78);backdrop-filter:blur(18px)}
-.brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:.2px}.logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#09100b;font-weight:900;box-shadow:0 8px 24px #65c18c25}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% -10%,#1c2430 0,#0b0d12 42%);color:var(--text)}
+button,input,textarea,select{font:inherit}.app{min-height:100%;max-width:1050px;margin:auto}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.82);backdrop-filter:blur(18px);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800}.logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#09100b;font-weight:900}
 .status{font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
-main{flex:1;overflow:auto;padding:28px 18px 120px;scroll-behavior:smooth}.welcome{min-height:calc(100vh - 230px);display:flex;align-items:center;justify-content:center;text-align:center}.hero{max-width:650px}.hero h1{font-size:clamp(34px,7vw,62px);margin:0 0 12px;letter-spacing:-2px}.hero h1 span{background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;color:transparent}.hero p{color:var(--muted);font-size:16px;line-height:1.65;margin:0 auto 25px}
-.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}.chip{border:1px solid var(--line);background:#12161e;color:#cdd2dc;padding:10px 13px;border-radius:14px;cursor:pointer;transition:.2s}.chip:hover{border-color:#596172;transform:translateY(-1px)}
-.chat{max-width:760px;margin:auto}.msg{display:flex;margin:18px 0}.msg.user{justify-content:flex-end}.bubble{max-width:82%;padding:13px 16px;border-radius:18px;line-height:1.55;white-space:pre-wrap}.assistant .bubble{background:var(--panel2);border:1px solid var(--line);border-top-left-radius:6px}.user .bubble{background:#263125;border:1px solid #344331;border-top-right-radius:6px}
-.composer{position:fixed;bottom:0;left:0;right:0;padding:12px 18px 18px;background:linear-gradient(transparent,var(--bg) 30%)}.compose{max-width:760px;margin:auto;display:flex;align-items:flex-end;gap:8px;background:var(--panel);border:1px solid #303643;border-radius:20px;padding:8px 9px 8px 15px;box-shadow:0 12px 45px #0008}.compose textarea{flex:1;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:inherit;line-height:1.45;max-height:130px;padding:7px 0}.send{width:38px;height:38px;border:0;border-radius:13px;background:var(--accent);color:#0b120c;font-weight:900;cursor:pointer}.send:disabled{opacity:.35;cursor:default}.hint{text-align:center;color:#697181;font-size:11px;margin-top:7px}
-.typing{display:flex;gap:4px;padding:4px}.typing i{width:6px;height:6px;background:#87909f;border-radius:50%;animation:b 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes b{50%{transform:translateY(-4px);opacity:.4}}
-@media(max-width:600px){header{height:58px}.brand{font-size:14px}.logo{width:31px;height:31px}.status{display:none}main{padding:18px 13px 110px}.bubble{max-width:90%}.compose{border-radius:18px}.hero h1{letter-spacing:-1.5px}}
+nav{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#0e1117;position:sticky;top:64px;z-index:19;overflow:auto}
+nav button{white-space:nowrap;border:1px solid transparent;background:transparent;color:var(--muted);padding:9px 13px;border-radius:12px;cursor:pointer}nav button.active,nav button:hover{background:var(--panel2);border-color:var(--line);color:var(--text)}
+main{padding:22px 16px 50px}.view{display:none}.view.active{display:block}
+.hero{padding:28px 6px 18px;text-align:center}.hero h1{font-size:clamp(34px,7vw,58px);margin:0 0 10px;letter-spacing:-2px}.hero h1 span{background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;color:transparent}.hero p{color:var(--muted);max-width:650px;margin:0 auto;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:17px}.card h3{margin:0 0 6px}.muted{color:var(--muted);font-size:13px;line-height:1.5}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 10px}.section-title h2{font-size:19px;margin:0}
+.item{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.photo{width:62px;height:62px;border-radius:14px;background:linear-gradient(135deg,#27302a,#15191f);display:grid;place-items:center;font-size:28px;flex:0 0 auto}.item-body{min-width:0;flex:1}.item-body h3{font-size:15px;margin:0 0 4px}.meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn{border:1px solid var(--line);background:#151922;color:#dce0e7;padding:9px 12px;border-radius:11px;cursor:pointer}.btn:hover{border-color:#596172}.btn.primary{background:var(--accent);border-color:var(--accent);color:#09100b;font-weight:800}.btn.wa{background:#203022;border-color:#3b593e;color:#bdf39d}
+form{max-width:760px;margin:10px auto}.field{margin:13px 0}.field label{display:block;font-size:13px;color:#cbd0d9;margin-bottom:7px}.field input,.field textarea,.field select{width:100%;border:1px solid #303643;outline:0;background:var(--panel);color:var(--text);border-radius:13px;padding:12px 13px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:#66717f}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ai{max-width:760px;margin:0 auto}.ai-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}.ai-result{margin-top:12px;padding:14px;border-radius:14px;background:#151a17;border:1px solid #2d4030;display:none}.tag{display:inline-block;padding:5px 8px;border-radius:8px;background:#263225;color:#c8efa8;font-size:12px;margin:3px 3px 0 0}
+.empty{padding:26px 10px;text-align:center;color:var(--muted)}.note{font-size:11px;color:#697181;text-align:center;margin-top:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.two{grid-template-columns:1fr}header{height:58px}nav{top:58px}.status{display:none}main{padding:16px 12px 40px}}
 </style>
 </head>
 <body>
 <div class="app">
-<header><div class="brand"><div class="logo">R</div>Rongsok</div><div class="status"><span class="dot"></span>siap ngobrol</div></header>
-<main id="main"><section class="welcome" id="welcome"><div class="hero"><h1>Halo, gue <span>Rongsok.</span></h1><p>Asisten kecil yang nggak ribet. Tanya apa aja, lempar ide, atau suruh gue bantu mikirin sesuatu.</p><div class="chips"><button class="chip">💡 Cari ide</button><button class="chip">🧠 Jelasin sesuatu</button><button class="chip">💻 Bantu coding</button><button class="chip">🚀 Bikin project</button></div></div></section><section class="chat" id="chat"></section></main>
-<div class="composer"><div class="compose"><textarea id="input" rows="1" placeholder="Ngobrol dengan Rongsok..." aria-label="Pesan"></textarea><button class="send" id="send" disabled>↑</button></div><div class="hint">Rongsok v1 · HTML + CSS + JavaScript</div></div>
+<header><div class="brand"><div class="logo">R</div>Rongsok</div><div class="status"><span class="dot"></span>barang ketemu pembeli</div></header>
+<nav id="nav">
+<button class="active" data-view="home">🏠 Beranda</button>
+<button data-view="post">📦 Post Barang</button>
+<button data-view="goods">♻️ Barang Sekitar</button>
+<button data-view="buyers">🏪 Pengusaha Sekitar</button>
+<button data-view="ai">✨ Bantu AI</button>
+</nav>
+
+<main>
+<section class="view active" id="home">
+<div class="hero">
+<h1>Barang ketemu <span>orang yang butuh.</span></h1>
+<p>Post rongsok, kasih lokasi, lalu biarkan pengusaha di sekitar melihatnya. Nggak perlu ribet — kalau cocok, lanjut WhatsApp.</p>
+<div class="actions" style="justify-content:center;margin-top:18px">
+<button class="btn primary" data-go="post">📦 Saya punya barang</button>
+<button class="btn" data-go="buyers">🏪 Cari pengusaha</button>
 </div>
+</div>
+<div class="grid">
+<div class="card"><h3>📦 Punya barang?</h3><div class="muted">Foto barang, pilih jenisnya, kasih perkiraan jumlah dan lokasi. Selesai.</div><div class="actions"><button class="btn primary" data-go="post">Post sekarang</button></div></div>
+<div class="card"><h3>🔎 Butuh barang?</h3><div class="muted">Lihat barang yang tersedia di sekitar dan hubungi pemiliknya langsung lewat WhatsApp.</div><div class="actions"><button class="btn" data-go="goods">Lihat barang</button></div></div>
+</div>
+<div class="section-title"><h2>Pengusaha sekitar</h2><button class="btn" data-go="buyers">Lihat semua</button></div>
+<div class="card" id="homeBuyers"></div>
+</section>
+
+<section class="view" id="post">
+<div class="section-title"><h2>📦 Post Barang</h2></div>
+<div class="card">
+<form id="postForm">
+<div class="field"><label>Nama barang</label><input id="pName" required placeholder="Contoh: Kardus bekas"></div>
+<div class="two">
+<div class="field"><label>Kategori</label><select id="pCat"><option>Kardus / Kertas</option><option>Plastik</option><option>Besi / Logam</option><option>Elektronik</option><option>Botol / Kaca</option><option>Lainnya</option></select></div>
+<div class="field"><label>Perkiraan jumlah / berat</label><input id="pQty" placeholder="Contoh: ±300 kg"></div>
+</div>
+<div class="field"><label>Lokasi</label><input id="pLoc" required placeholder="Contoh: Cikarang, Bekasi"></div>
+<div class="field"><label>Foto (opsional untuk demo)</label><input id="pPhoto" type="file" accept="image/*"></div>
+<div class="field"><label>Keterangan (opsional)</label><textarea id="pDesc" placeholder="Kondisi, bisa diambil kapan, dll."></textarea></div>
+<button class="btn primary" type="submit">🚀 Publikasikan barang</button>
+</form>
+<div class="note">Versi awal: posting disimpan di browser ini. Backend/database bisa dipasang nanti tanpa mengubah konsepnya.</div>
+</div>
+</section>
+
+<section class="view" id="goods">
+<div class="section-title"><h2>♻️ Barang di sekitar</h2><button class="btn" id="locBtn">📍 Gunakan lokasi saya</button></div>
+<div class="card" id="goodsList"></div>
+</section>
+
+<section class="view" id="buyers">
+<div class="section-title"><h2>🏪 Pengusaha sekitar</h2><button class="btn" id="locBtn2">📍 Gunakan lokasi saya</button></div>
+<div class="card" id="buyerList"></div>
+</section>
+
+<section class="view" id="ai">
+<div class="hero" style="padding-top:12px"><h1 style="font-size:36px">✨ Bantu <span>Rongsok AI</span></h1><p>Nggak mau isi form? Ceritakan barangmu seperti biasa. Gue bantu ubah jadi data posting.</p></div>
+<div class="ai">
+<div class="ai-box">
+<textarea id="aiInput" style="width:100%;min-height:130px;resize:vertical;border:1px solid #303643;outline:0;background:#0d1016;color:var(--text);border-radius:13px;padding:13px" placeholder="Contoh: gue punya kardus sekitar 500 kilo di Cikarang, kondisi campur..."></textarea>
+<div class="actions"><button class="btn primary" id="aiParse">✨ Bantu isi posting</button><button class="btn" id="aiExample">Coba contoh</button></div>
+<div class="ai-result" id="aiResult"></div>
+</div>
+</div>
+</section>
+</main>
+</div>
+
 <script>
-const input=document.querySelector('#input'),send=document.querySelector('#send'),chat=document.querySelector('#chat'),welcome=document.querySelector('#welcome'),main=document.querySelector('#main');
-const replies=[
-  'Siap bro 😎. Gue dengerin. Mau kita bedah dari mana?',
-  'Nah, ini menarik. Kita bisa bikin sesimpel mungkin dulu, baru ditambah kalau memang perlu.',
-  'Bisa. Prinsip gue: jangan bikin project jadi bengkak kalau HTML, CSS, dan JavaScript sudah cukup.',
-  'Gas. Lempar detailnya ke sini, nanti kita pecah jadi bagian kecil yang gampang dikerjain.'
+const demoBuyers=[
+{name:'Lapak Berkah',type:'Kardus • Plastik • Kertas',area:'Bekasi',distance:'—',phone:'',emoji:'🏪'},
+{name:'Sahabat Besi',type:'Besi • Logam • Elektronik',area:'Cikarang',distance:'—',phone:'',emoji:'♻️'},
+{name:'Mitra Daur Ulang',type:'Plastik • Botol • Kardus',area:'Karawang',distance:'—',phone:'',emoji:'🏭'},
+{name:'Lapak Jaya',type:'Campur • Kertas • Logam',area:'Tambun',distance:'—',phone:'',emoji:'🏪'}
 ];
-let n=0;
-function add(text,who){const row=document.createElement('div');row.className='msg '+who;const b=document.createElement('div');b.className='bubble';b.textContent=text;row.appendChild(b);chat.appendChild(row);main.scrollTop=main.scrollHeight}
-function typing(){const row=document.createElement('div');row.className='msg assistant';row.id='typing';row.innerHTML='<div class="bubble"><div class="typing"><i></i><i></i><i></i></div></div>';chat.appendChild(row);main.scrollTop=main.scrollHeight}
-function answer(){const t=input.value.trim();if(!t)return;welcome.style.display='none';add(t,'user');input.value='';resize();send.disabled=true;typing();setTimeout(()=>{document.querySelector('#typing')?.remove();add(replies[n++%replies.length],'assistant')},550)}
-function resize(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';send.disabled=!input.value.trim()}
-send.onclick=answer;input.addEventListener('input',resize);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();answer()}});
-document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{input.value=c.textContent.replace(/^\S+\s/,'');resize();answer()});
+let userLocation=null;
+const demoGoods=[
+{name:'Kardus bekas',cat:'Kardus / Kertas',qty:'±300 kg',loc:'Bekasi',desc:'Kondisi campur, siap diambil',emoji:'📦'},
+{name:'Besi campur',cat:'Besi / Logam',qty:'±150 kg',loc:'Cikarang',desc:'Potongan besi bekas',emoji:'🔩'},
+{name:'Botol plastik',cat:'Plastik',qty:'±80 kg',loc:'Tambun',desc:'Sudah dikumpulkan',emoji:'🧴'}
+];
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+
+function show(view){
+ $$('.view').forEach(v=>v.classList.toggle('active',v.id===view));
+ $$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(view==='goods') renderGoods();
+ if(view==='buyers') renderBuyers();
+}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+$$('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+
+function getPosts(){try{return JSON.parse(localStorage.getItem('rongsok_posts')||'[]')}catch{return[]}}
+function savePosts(p){localStorage.setItem('rongsok_posts',JSON.stringify(p))}
+
+function wa(text){
+ const url='https://wa.me/?text='+encodeURIComponent(text);
+ window.open(url,'_blank');
+}
+
+function renderBuyers(){
+ const list=$('#buyerList'), home=$('#homeBuyers');
+ const html=demoBuyers.map((b,i)=>`<div class="item"><div class="photo">${b.emoji}</div><div class="item-body"><h3>${b.name}</h3><div class="muted">${b.type}</div><div class="meta"><span>📍 ${b.area}</span><span>📏 ${b.distance}</span></div><div class="actions"><button class="btn wa" onclick="wa('Halo, saya melihat profil ${b.name} di Rongsok. Saya ingin tanya barang yang diterima.')">💬 Hubungi via WhatsApp</button></div></div></div>`).join('');
+ list.innerHTML=html||'<div class="empty">Belum ada pengusaha.</div>';
+ home.innerHTML=demoBuyers.slice(0,3).map(b=>`<div class="item"><div class="photo">${b.emoji}</div><div class="item-body"><h3>${b.name}</h3><div class="muted">${b.type}</div><div class="meta"><span>📍 ${b.area}</span></div></div></div>`).join('');
+}
+renderBuyers();
+
+function renderGoods(){
+ const own=getPosts().map(p=>({...p,own:true}));
+ const list=[...own,...demoGoods];
+ $('#goodsList').innerHTML=list.length?list.map((g,i)=>`<div class="item"><div class="photo">${g.emoji||'♻️'}</div><div class="item-body"><h3>${g.name}</h3><div class="muted">${g.desc||g.cat||''}</div><div class="meta"><span>⚖️ ${g.qty||'—'}</span><span>📍 ${g.loc||'—'}</span></div><div class="actions">${g.own?'<span class="tag">Posting saya</span>':`<button class="btn wa" onclick="wa('Halo, saya melihat posting ${g.name} di Rongsok. Barangnya masih tersedia?')">💬 Hubungi pemilik via WhatsApp</button>`}</div></div></div>`).join(''):'<div class="empty">Belum ada barang. Jadilah yang pertama posting.</div>';
+}
+
+$('#postForm').onsubmit=async e=>{
+ e.preventDefault();
+ const p={name:$('#pName').value,cat:$('#pCat').value,qty:$('#pQty').value||'—',loc:$('#pLoc').value,desc:$('#pDesc').value||'Belum ada keterangan',emoji:'♻️',createdAt:Date.now()};
+ const file=$('#pPhoto').files[0];
+ if(file){p.emoji='📸'}
+ const posts=getPosts();posts.unshift(p);savePosts(posts);
+ e.target.reset();alert('Barang berhasil diposting di demo Rongsok.');show('goods');
+};
+
+function useLocation(){
+ if(!navigator.geolocation){alert('Browser ini tidak menyediakan lokasi.');return}
+ navigator.geolocation.getCurrentPosition(pos=>{
+   userLocation={lat:pos.coords.latitude,lon:pos.coords.longitude};
+   alert('Lokasi berhasil dibaca. Di versi backend nanti, data ini dipakai untuk menyaring pengusaha/barang terdekat.');
+ },()=>alert('Lokasi belum diizinkan. Kamu tetap bisa memakai Rongsok tanpa lokasi.'));
+}
+$('#locBtn').onclick=useLocation;$('#locBtn2').onclick=useLocation;
+
+function parseAI(){
+ const raw=$('#aiInput').value.trim();if(!raw)return;
+ const s=raw.toLowerCase();
+ const cats=s.includes('kardus')||s.includes('kertas')?'Kardus / Kertas':s.includes('plastik')||s.includes('botol')?'Plastik':s.includes('besi')||s.includes('logam')?'Besi / Logam':s.includes('elektronik')||s.includes('kulkas')||s.includes('tv')?'Elektronik':'Lainnya';
+ const qty=(raw.match(/(?:sekitar|±|kurang lebih|kurleb)\s*([\d.,]+\s*(?:kg|kilo|ton|pcs|biji))/i)||raw.match(/([\d.,]+\s*(?:kg|kilo|ton|pcs|biji))/i)||[])[1]||'Perlu dikonfirmasi';
+ const locations=['jakarta','bekasi','cikarang','karawang','tambun','depok','tangerang','bogor'];
+ const loc=locations.find(x=>s.includes(x)); 
+ const name=cats==='Kardus / Kertas'?'Kardus / kertas bekas':cats==='Besi / Logam'?'Besi / logam bekas':cats==='Plastik'?'Plastik bekas':cats==='Elektronik'?'Elektronik bekas':'Barang bekas';
+ const html=`<strong>Gue tangkap begini:</strong><div style="margin-top:8px"><span class="tag">📦 ${name}</span><span class="tag">⚖️ ${qty}</span><span class="tag">📍 ${loc?loc[0].toUpperCase()+loc.slice(1):'Lokasi belum disebut'}</span></div><div class="actions"><button class="btn primary" id="useAI">Pakai untuk posting</button></div>`;
+ const r=$('#aiResult');r.innerHTML=html;r.style.display='block';
+ $('#useAI').onclick=()=>{show('post');$('#pName').value=name;$('#pCat').value=cats;$('#pQty').value=qty==='Perlu dikonfirmasi'?'':qty;$('#pLoc').value=loc?loc[0].toUpperCase()+loc.slice(1):'';$('#pDesc').value=raw};
+}
+$('#aiParse').onclick=parseAI;
+$('#aiExample').onclick=()=>{$('#aiInput').value='Gue punya kardus sekitar 500 kg di Cikarang, kondisi campur dan siap diambil.';parseAI()};
 </script>
 </body>
 </html>
