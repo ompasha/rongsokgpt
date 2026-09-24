@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>Rongsok — AI Assistant</title>
+<style>
+:root{--bg:#0b0d12;--panel:#11141b;--panel2:#171b24;--text:#f4f5f7;--muted:#9299a8;--line:#252a35;--accent:#9be15d;--accent2:#65c18c}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% -10%,#1c2430 0,#0b0d12 42%);color:var(--text);overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column;max-width:980px;margin:auto}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.78);backdrop-filter:blur(18px)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:.2px}.logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#09100b;font-weight:900;box-shadow:0 8px 24px #65c18c25}
+.status{font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+main{flex:1;overflow:auto;padding:28px 18px 120px;scroll-behavior:smooth}.welcome{min-height:calc(100vh - 230px);display:flex;align-items:center;justify-content:center;text-align:center}.hero{max-width:650px}.hero h1{font-size:clamp(34px,7vw,62px);margin:0 0 12px;letter-spacing:-2px}.hero h1 span{background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;color:transparent}.hero p{color:var(--muted);font-size:16px;line-height:1.65;margin:0 auto 25px}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}.chip{border:1px solid var(--line);background:#12161e;color:#cdd2dc;padding:10px 13px;border-radius:14px;cursor:pointer;transition:.2s}.chip:hover{border-color:#596172;transform:translateY(-1px)}
+.chat{max-width:760px;margin:auto}.msg{display:flex;margin:18px 0}.msg.user{justify-content:flex-end}.bubble{max-width:82%;padding:13px 16px;border-radius:18px;line-height:1.55;white-space:pre-wrap}.assistant .bubble{background:var(--panel2);border:1px solid var(--line);border-top-left-radius:6px}.user .bubble{background:#263125;border:1px solid #344331;border-top-right-radius:6px}
+.composer{position:fixed;bottom:0;left:0;right:0;padding:12px 18px 18px;background:linear-gradient(transparent,var(--bg) 30%)}.compose{max-width:760px;margin:auto;display:flex;align-items:flex-end;gap:8px;background:var(--panel);border:1px solid #303643;border-radius:20px;padding:8px 9px 8px 15px;box-shadow:0 12px 45px #0008}.compose textarea{flex:1;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:inherit;line-height:1.45;max-height:130px;padding:7px 0}.send{width:38px;height:38px;border:0;border-radius:13px;background:var(--accent);color:#0b120c;font-weight:900;cursor:pointer}.send:disabled{opacity:.35;cursor:default}.hint{text-align:center;color:#697181;font-size:11px;margin-top:7px}
+.typing{display:flex;gap:4px;padding:4px}.typing i{width:6px;height:6px;background:#87909f;border-radius:50%;animation:b 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}@keyframes b{50%{transform:translateY(-4px);opacity:.4}}
+@media(max-width:600px){header{height:58px}.brand{font-size:14px}.logo{width:31px;height:31px}.status{display:none}main{padding:18px 13px 110px}.bubble{max-width:90%}.compose{border-radius:18px}.hero h1{letter-spacing:-1.5px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="logo">R</div>Rongsok</div><div class="status"><span class="dot"></span>siap ngobrol</div></header>
+<main id="main"><section class="welcome" id="welcome"><div class="hero"><h1>Halo, gue <span>Rongsok.</span></h1><p>Asisten kecil yang nggak ribet. Tanya apa aja, lempar ide, atau suruh gue bantu mikirin sesuatu.</p><div class="chips"><button class="chip">💡 Cari ide</button><button class="chip">🧠 Jelasin sesuatu</button><button class="chip">💻 Bantu coding</button><button class="chip">🚀 Bikin project</button></div></div></section><section class="chat" id="chat"></section></main>
+<div class="composer"><div class="compose"><textarea id="input" rows="1" placeholder="Ngobrol dengan Rongsok..." aria-label="Pesan"></textarea><button class="send" id="send" disabled>↑</button></div><div class="hint">Rongsok v1 · HTML + CSS + JavaScript</div></div>
+</div>
+<script>
+const input=document.querySelector('#input'),send=document.querySelector('#send'),chat=document.querySelector('#chat'),welcome=document.querySelector('#welcome'),main=document.querySelector('#main');
+const replies=[
+  'Siap bro 😎. Gue dengerin. Mau kita bedah dari mana?',
+  'Nah, ini menarik. Kita bisa bikin sesimpel mungkin dulu, baru ditambah kalau memang perlu.',
+  'Bisa. Prinsip gue: jangan bikin project jadi bengkak kalau HTML, CSS, dan JavaScript sudah cukup.',
+  'Gas. Lempar detailnya ke sini, nanti kita pecah jadi bagian kecil yang gampang dikerjain.'
+];
+let n=0;
+function add(text,who){const row=document.createElement('div');row.className='msg '+who;const b=document.createElement('div');b.className='bubble';b.textContent=text;row.appendChild(b);chat.appendChild(row);main.scrollTop=main.scrollHeight}
+function typing(){const row=document.createElement('div');row.className='msg assistant';row.id='typing';row.innerHTML='<div class="bubble"><div class="typing"><i></i><i></i><i></i></div></div>';chat.appendChild(row);main.scrollTop=main.scrollHeight}
+function answer(){const t=input.value.trim();if(!t)return;welcome.style.display='none';add(t,'user');input.value='';resize();send.disabled=true;typing();setTimeout(()=>{document.querySelector('#typing')?.remove();add(replies[n++%replies.length],'assistant')},550)}
+function resize(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,130)+'px';send.disabled=!input.value.trim()}
+send.onclick=answer;input.addEventListener('input',resize);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();answer()}});
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{input.value=c.textContent.replace(/^\S+\s/,'');resize();answer()});
+</script>
+</body>
+</html>
